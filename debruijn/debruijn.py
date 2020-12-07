@@ -66,20 +66,48 @@ def get_arguments():
 
 
 def read_fastq(fastq_file):
-    pass
-
-
+    i = -1
+    for row in open(fastq_file, "r"):
+        if i%4 == 0: 
+            row = row.rstrip("\n")
+            yield row
+        i += 1        
+                
 def cut_kmer(read, kmer_size):
-    pass
+    for i in range(len(read)-kmer_size+1):
+        yield read[i:kmer_size+i]
 
 
 def build_kmer_dict(fastq_file, kmer_size):
-    pass
-
+    with open(fastq_file) as f:
+        for r, l in enumerate(f):
+            pass
+    r += 1
+    genS = read_fastq(fastq_file)
+    dct = {}
+    for i in range(r//4):
+        S = next(genS)
+        genK = cut_kmer(S , kmer_size)
+        for j in range(len(S)-kmer_size+1):
+            K = next(genK)
+            dct[K] = dct.get(K,0) + 1
+    
+    return dct
+            
+            
 
 def build_graph(kmer_dict):
-    pass
-
+    G = nx.Graph()
+    H = nx.DiGraph(G)
+    for k, v in kmer_dict.items():
+        print('k =', k)
+        x = k[0:(len(k)-1)]
+        print('x =', x)
+        y = k[1:len(k)]
+        print('y =', y)
+        print('v =', v)
+        H.add_edge(x,y, weight = v)
+    return H
 
 def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
     pass
@@ -108,10 +136,10 @@ def solve_out_tips(graph, ending_nodes):
     pass
 
 def get_starting_nodes(graph):
-    pass
+    return [n for n, d in graph.in_degree() if d == 0]
 
 def get_sink_nodes(graph):
-    pass
+    return [node for node, out_degree in graph.out_degree() if out_degree == 0]
 
 def get_contigs(graph, starting_nodes, ending_nodes):
     pass
@@ -128,6 +156,19 @@ def main():
     """
     # Get arguments
     args = get_arguments()
+    fastq_file = args.fastq_file
+    genS2 = read_fastq(fastq_file)
+    print(next(genS2))
+    print(next(genS2))
+#    X1=next(genS)
+#    print(X1)
+#    genK = cut_kmer(X1, 5)
+    dct = build_kmer_dict(fastq_file, 5)
+    print(dct)
+    H = build_graph(dct)
+    print(get_sink_nodes(H))
+    print(get_starting_nodes(H))
+    print('hello world')
 
 if __name__ == '__main__':
     main()
